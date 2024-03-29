@@ -1,3 +1,4 @@
+import { sendToken } from "../Utils/features.js";
 import { User } from "../models/user.js";
 
 const newUser = async (req, res) => {
@@ -8,14 +9,15 @@ const newUser = async (req, res) => {
     url: "https://www.w3schools.com/w3images/avatar2.png",
   };
 
-  await User.create({
+  const user = await User.create({
     name,
     username,
     password,
     bio,
     avatar,
   });
-  res.status(201).json({ message: "user created successful" });
+  // res.status(201).json({ message: "user created successful" });
+  sendToken(res, user, 201, "User created successfully");
 };
 
 const login = (req, res) => {
