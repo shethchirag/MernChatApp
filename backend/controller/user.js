@@ -1,5 +1,5 @@
 import { compare } from "bcrypt";
-import { sendToken } from "../Utils/features.js";
+import { cookieOptions, sendToken } from "../Utils/features.js";
 import { User } from "../models/user.js";
 import { TryCatch } from "../middleware/error.js";
 import { ErrorHandler } from "../Utils/utility.js";
@@ -35,6 +35,34 @@ const login = TryCatch(async (req, res, next) => {
   sendToken(res, user, 200, `Welcome Back ${user.name}`);
 });
 
-const getMyProfile = async (req, res) => {};
+const getMyProfile = TryCatch(async (req, res) => {
+  const user = await User.findById(req.user);
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
 
-export { login, newUser, getMyProfile };
+const logout = TryCatch(async (req, res) => {
+  return res
+    .status(200)
+    .cookie("chirag-token", "", { ...cookieOptions, maxAge: 0 })
+    .json({
+      success: true,
+      message: "Logout Successfully",
+    });
+});
+
+const searchUsers = TryCatch(async (req, res) => {
+  const { username } = req.query;
+
+  // const users = await User.find({
+  //   username: { $regex: username, $options: "i" },
+  // });
+  res.status(200).json({
+    success: true,
+    message: username,
+  });
+});
+
+export { login, newUser, getMyProfile, logout, searchUsers };
