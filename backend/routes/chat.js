@@ -5,6 +5,7 @@ import {
   getMyChats,
   getMyGroups,
   newGroupChat,
+  removeMember,
 } from "../controller/chat.js";
 
 const app = express.Router();
@@ -15,5 +16,7 @@ app.post("/new", newGroupChat);
 app.get("/my", getMyChats);
 app.get("/my/group", getMyGroups);
 app.put("/addmembers", addMembers);
+app.put("/removemember", removeMember);
+app.delete("/leave/:id");
 
 export default app;
