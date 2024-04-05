@@ -11,6 +11,7 @@ import { TryCatch } from "../middleware/error.js";
 import { Chat } from "./../models/chat.js";
 import { User } from "./../models/user.js";
 import { Message } from "./../models/message.js";
+// import { query } from "express";
 
 const newGroupChat = TryCatch(async (req, res, next) => {
   const { name, members } = req.body;
@@ -255,6 +256,34 @@ const sendAttachments = TryCatch(async (req, res, next) => {
     message,
   });
 });
+const getChatDetails = TryCatch(async (req, res, next) => {
+  if (req.query.populate === "true") {
+    const chat = await Chat.findById(req.params.id)
+      .populate("members", "name avatar")
+      .lean();
+    if (!chat) return next(new ErrorHandler("chat not found", 404));
+
+    chat.members = chat.members.map(({ _id, name, avatar }) => {
+      return {
+        _id,
+        name,
+        avatar: avatar.url,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      chat,
+    });
+  } else {
+    const chat = await Chat.findById(req.params.id);
+    if (!chat) return next(new ErrorHandler("chat not found", 404));
+    return res.status(200).json({
+      success: true,
+      chat,
+    });
+  }
+});
 
 export {
   newGroupChat,
@@ -264,4 +293,5 @@ export {
   removeMember,
   leaveGroup,
   sendAttachments,
+  getChatDetails,
 };
