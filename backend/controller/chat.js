@@ -1,4 +1,4 @@
-import { emitEvent } from "../Utils/features.js";
+import { deleteFilesFromCloudinary, emitEvent } from "../Utils/features.js";
 import { ErrorHandler } from "../Utils/utility.js";
 import {
   ALERT,
@@ -284,6 +284,84 @@ const getChatDetails = TryCatch(async (req, res, next) => {
     });
   }
 });
+const renameGroup = TryCatch(async (req, res, next) => {
+  const chatId = req.params.id;
+  const { name } = req.body;
+  const chat = await Chat.findById(chatId);
+  if (!chat) return next(new ErrorHandler("chat not found", 404));
+  if (!chat.groupChat)
+    return next(new ErrorHandler("This is not a group chat", 400));
+  if (chat.creator.toString() !== req.user.toString()) {
+    return next(new ErrorHandler("you are not allowed to rename group", 403));
+  }
+  chat.name = name;
+  await chat.save();
+  emitEvent(req, REFETCH_CHAT, chat.members);
+  return res.status(200).json({
+    success: true,
+    message: "Group name updated successfully",
+  });
+});
+const deleteChat = TryCatch(async (req, res, next) => {
+  const chatId = req.params.id;
+  const chat = await Chat.findById(chatId);
+  if (!chat) return next(new ErrorHandler("chat not found", 404));
+
+  const members = chat.members;
+
+  if (!chat.groupChat && chat.creator.toString() !== req.user.toString())
+    return next(new ErrorHandler("you are not allowed to delete group", 400));
+  if (!chat.groupChat && !chat.members.includes(req.user.toString())) {
+    return next(new ErrorHandler("you are not allowed to delete group", 403));
+  }
+  //here we are deleting all messages of chat as well as attachments or file delete from cloudinary
+
+  const messageWithAttachments = await Message.find({
+    chat: chatId,
+    attachments: { $exists: true, $ne: [] },
+  });
+  const public_ids = [];
+
+  messageWithAttachments.forEach(({ attachment }) => {
+    attachment.forEach(({ public_id }) => public_ids.push(public_id));
+  });
+  await Promise.all([
+    deleteFilesFromCloudinary(public_ids),
+    chat.deleteOne(),
+    Message.deleteMany({ chat: chatId }),
+  ]);
+
+  emitEvent(req, REFETCH_CHAT, members);
+  return res.status(200).json({
+    success: true,
+    message: "Group deleted successfully",
+  });
+});
+const getMessages = TryCatch(async (req, res, next) => {
+  const chatId = req.params.id;
+  const { page = 1 } = req.query;
+  const resultPerPage = 20;
+  const skip = (page - 1) * resultPerPage;
+
+  const [messages, totalMessageCount] = await Promise.all([
+    Message.find({ chat: chatId })
+      .sort({
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(resultPerPage)
+      .populate("sender")
+      .lean(),
+    Message.countDocuments({ chat: chatId }),
+  ]);
+  const totalPages = Math.ceil(totalMessageCount / resultPerPage) || 0;
+
+  return res.status(200).json({
+    success: true,
+    messages: messages.reverse(),
+    totalPages,
+  });
+});
 
 export {
   newGroupChat,
@@ -294,4 +372,7 @@ export {
   leaveGroup,
   sendAttachments,
   getChatDetails,
+  renameGroup,
+  deleteChat,
+  getMessages,
 };
