@@ -8,11 +8,16 @@ import {
 } from "../controller/user.js";
 import { singleAvatar } from "../middleware/multer.js";
 import { isAuthenticated } from "../middleware/auth.js";
+import {
+  loginValidator,
+  registerValidator,
+  validateHandler,
+} from "../lib/validators.js";
 
 const app = express.Router();
 
-app.post("/new", singleAvatar, newUser);
-app.post("/login", login);
+app.post("/new", singleAvatar, registerValidator(), validateHandler, newUser);
+app.post("/login", loginValidator(), validateHandler, login);
 
 //after here user must be logged in to access these routes
 app.use(isAuthenticated);
