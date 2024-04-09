@@ -3,6 +3,7 @@ import { cookieOptions, sendToken } from "../Utils/features.js";
 import { User } from "../models/user.js";
 import { TryCatch } from "../middleware/error.js";
 import { ErrorHandler } from "../Utils/utility.js";
+import { Chat } from "./../models/chat.js";
 
 const newUser = async (req, res) => {
   const { name, username, password, bio } = req.body;
@@ -54,14 +55,28 @@ const logout = TryCatch(async (req, res) => {
 });
 
 const searchUsers = TryCatch(async (req, res) => {
-  const { username } = req.query;
+  const { username = "" } = req.query;
+  const myChats = await Chat.find({ groupChat: false, members: req.user });
 
   // const users = await User.find({
   //   username: { $regex: username, $options: "i" },
   // });
+  const allUsersFromChats = myChats.flatMap((chat) => chat.members);
+  const allUsersExceptMeAndFriends = await User.find({
+    _id: { $nin: allUsersFromChats },
+    username: { $regex: username, $options: "i" },
+  });
+
+  const users = allUsersExceptMeAndFriends.map(({ _id, name, avatar }) => {
+    return {
+      _id,
+      name,
+      avatar: avatar.url,
+    };
+  });
   res.status(200).json({
     success: true,
-    message: username,
+    users,
   });
 });
 
