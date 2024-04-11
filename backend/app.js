@@ -6,6 +6,7 @@ import { errorMiddleware } from "./middleware/error.js";
 import cookieParser from "cookie-parser";
 import useRouter from "./routes/user.js";
 import chatRouter from "./routes/chat.js";
+import adminRouter from "./routes/admin.js";
 import { createMessageInAChat } from "./seeders/chat.js";
 
 dotenv.config({
@@ -29,6 +30,7 @@ app.use(express.urlencoded());
 
 app.use("/user", useRouter);
 app.use("/chat", chatRouter);
+app.use("/admin", adminRouter);
 
 app.get("/", (req, res) => {
   res.send("Home Page");
