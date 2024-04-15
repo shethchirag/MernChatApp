@@ -1,5 +1,4 @@
 import { ErrorHandler } from "../Utils/utility.js";
-import { TryCatch } from "./error.js";
 
 import jwt from "jsonwebtoken";
 
@@ -13,5 +12,17 @@ const isAuthenticated = (req, res, next) => {
 
   next();
 };
+const isAuthenticatedAdmin = (req, res, next) => {
+  const token = req.cookies["chirag-admin-token"];
+  if (!token) {
+    return next(new ErrorHandler("Only Admin Can Access", 401));
+  }
+  const secretKey = jwt.verify(token, process.env.ADMIN_SECRET_KEY);
+  const adminSecretKey = process.env.ADMIN_SECRET_KEY || "chirag";
+  const isMatch = secretKey === adminSecretKey;
+  if (!isMatch) return next(new ErrorHandler("Invalid Admin key", 401));
 
-export { isAuthenticated };
+  next();
+};
+
+export { isAuthenticated, isAuthenticatedAdmin };

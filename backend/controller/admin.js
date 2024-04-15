@@ -1,8 +1,49 @@
+import { ErrorHandler } from "../Utils/utility.js";
 import { getOtherMember } from "../lib/helper.js";
 import { TryCatch } from "../middleware/error.js";
 import { Chat } from "../models/chat.js";
 import { Message } from "../models/message.js";
 import { User } from "../models/user.js";
+import jwt from "jsonwebtoken";
+import { cookieOptions } from "../Utils/features.js";
+import { adminSecretKey } from "../app.js";
+
+const adminLogin = TryCatch(async (req, res, next) => {
+  const { secretKey } = req.body;
+
+  const isMatch = secretKey === adminSecretKey;
+  if (!isMatch) return next(new ErrorHandler("Invalid secret key", 401));
+  const token = jwt.sign(secretKey, process.env.ADMIN_SECRET_KEY);
+
+  return res
+    .status(200)
+    .cookie("chirag-admin-token", token, {
+      ...cookieOptions,
+      maxAge: 1000 * 60 * 15,
+    })
+    .json({
+      success: true,
+      message: "Authenticated Successfully,WellCome Admin",
+    });
+});
+const adminLogout = TryCatch(async (req, res, next) => {
+  return res
+    .status(200)
+    .cookie("chirag-admin-token", "", {
+      ...cookieOptions,
+      maxAge: 0,
+    })
+    .json({
+      success: true,
+      message: "Logout Successfully",
+    });
+});
+
+const getAdminData = TryCatch(async (req, res, next) => {
+  return res.status(200).json({
+    admin: true,
+  });
+});
 
 const allUsers = TryCatch(async (req, res, next) => {
   const users = await User.find({});
@@ -127,4 +168,12 @@ const getDashboardStats = TryCatch(async (req, res, next) => {
   });
 });
 
-export { allUsers, allChats, allMessages, getDashboardStats };
+export {
+  allUsers,
+  allChats,
+  allMessages,
+  getDashboardStats,
+  adminLogin,
+  adminLogout,
+  getAdminData,
+};
