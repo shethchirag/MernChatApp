@@ -16,6 +16,8 @@ import { User } from "./models/user.js";
 import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
 import cors from "cors";
+import { v2 as cloudinary } from "cloudinary";
+import { createUser } from "./seeders/user.js";
 
 dotenv.config({
   path: "./.env",
@@ -29,6 +31,11 @@ export const envMode = process.env.NODE_ENV.trim() || "PRODUCTION";
 const userSocketIDs = new Map();
 
 connectDB(mongoURI);
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 // createUser(10);
 // createSingleChats(10);
 // createGroupChat(10);

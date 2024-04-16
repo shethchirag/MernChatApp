@@ -17,7 +17,7 @@ import { LinearGradient } from "../components/Layout/constants/Color";
 import axios from "axios";
 import { server } from "../components/Layout/constants/config";
 import { useDispatch } from "react-redux";
-import { userExists, userNotExists } from "../redux/reducers/auth";
+import { userExists } from "../redux/reducers/auth";
 import toast from "react-hot-toast";
 
 const Login = () => {
@@ -59,11 +59,12 @@ const Login = () => {
   const handleSighup = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("avatar", avatar.value);
+    formData.append("avatar", avatar.file);
     formData.append("name", name.value);
     formData.append("bio", bio.value);
-    formData.append("userName", userName.value);
+    formData.append("username", userName.value);
     formData.append("password", password.value);
+    console.log(userName.value);
 
     const config = {
       withCredentials: true,
@@ -79,6 +80,7 @@ const Login = () => {
       );
       dispatch(userExists(true));
       toast.success(data.message);
+      console.log(data);
     } catch (error) {
       toast.error(error?.response?.data?.message) || "Something went wrong";
     }
