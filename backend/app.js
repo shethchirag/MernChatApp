@@ -15,6 +15,7 @@ import { v4 as uuid } from "uuid";
 import { User } from "./models/user.js";
 import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
+import cors from "cors";
 
 dotenv.config({
   path: "./.env",
@@ -41,10 +42,20 @@ const io = new Server(server, {});
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:4173",
+      "http://localhost:5173",
+      process.env.CLIENT_URL,
+    ],
+    credentials: true,
+  })
+);
 
-app.use("/user", useRouter);
-app.use("/chat", chatRouter);
-app.use("/admin", adminRouter);
+app.use("/api/v1/user", useRouter);
+app.use("/api/v1/chat", chatRouter);
+app.use("/api/v1/admin", adminRouter);
 
 app.get("/", (req, res) => {
   res.send("Home Page");

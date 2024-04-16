@@ -14,9 +14,15 @@ import { VisuallyHiddenInput } from "../components/style/VisuallyHidden";
 import { useInputValidation, useFileHandler } from "6pp";
 import { validateUsername } from "../lib/validators";
 import { LinearGradient } from "../components/Layout/constants/Color";
+import axios from "axios";
+import { server } from "../components/Layout/constants/config";
+import { useDispatch } from "react-redux";
+import { userExists, userNotExists } from "../redux/reducers/auth";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [login, setLogin] = useState(true);
+  const dispatch = useDispatch();
   const toggleLogin = () => {
     setLogin(!login);
   };
@@ -27,11 +33,55 @@ const Login = () => {
   const name = useInputValidation("");
   const avatar = useFileHandler("single");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    const config = {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      const { data } = await axios.post(
+        `${server}/api/v1/user/login`,
+        {
+          userName: userName.value,
+          password: password.value,
+        },
+        config
+      );
+      dispatch(userExists(true));
+      toast.success(data.message);
+    } catch (error) {
+      toast.error(error?.response?.data?.message) || "Something went wrong";
+    }
   };
-  const handleSighup = (e) => {
+  const handleSighup = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append("avatar", avatar.value);
+    formData.append("name", name.value);
+    formData.append("bio", bio.value);
+    formData.append("userName", userName.value);
+    formData.append("password", password.value);
+
+    const config = {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+    try {
+      const { data } = await axios.post(
+        `${server}/api/v1/user/new`,
+        formData,
+        config
+      );
+      dispatch(userExists(true));
+      toast.success(data.message);
+    } catch (error) {
+      toast.error(error?.response?.data?.message) || "Something went wrong";
+    }
   };
 
   return (
