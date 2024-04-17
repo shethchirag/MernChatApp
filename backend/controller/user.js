@@ -53,7 +53,7 @@ const login = TryCatch(async (req, res, next) => {
 
 const getMyProfile = TryCatch(async (req, res, next) => {
   const user = await User.findById(req.user);
-  if (!token)
+  if (!user)
     return next(new ErrorHandler("Please Login to access this resource", 404));
   res.status(200).json({
     success: true,

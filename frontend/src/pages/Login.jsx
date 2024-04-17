@@ -22,7 +22,6 @@ import toast from "react-hot-toast";
 
 const Login = () => {
   const [login, setLogin] = useState(true);
-  const dispatch = useDispatch();
   const toggleLogin = () => {
     setLogin(!login);
   };
@@ -32,6 +31,7 @@ const Login = () => {
   const bio = useInputValidation("");
   const name = useInputValidation("");
   const avatar = useFileHandler("single");
+  const dispatch = useDispatch();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -45,7 +45,7 @@ const Login = () => {
       const { data } = await axios.post(
         `${server}/api/v1/user/login`,
         {
-          userName: userName.value,
+          username: userName.value,
           password: password.value,
         },
         config
@@ -78,7 +78,7 @@ const Login = () => {
         formData,
         config
       );
-      dispatch(userExists(true));
+      dispatch(userExists(data.user));
       toast.success(data.message);
       console.log(data);
     } catch (error) {

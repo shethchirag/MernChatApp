@@ -6,7 +6,7 @@ import { LayoutLoader } from "./components/Layout/Loaders";
 import { server } from "./components/Layout/constants/config";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { userNotExists } from "./redux/reducers/auth";
+import { userExists, userNotExists } from "./redux/reducers/auth";
 
 const Home = lazy(() => import("./pages/Home"));
 const Chat = lazy(() => import("./pages/Chat"));
@@ -22,15 +22,12 @@ import toast, { Toaster } from "react-hot-toast";
 
 function App() {
   const { user, isLoading } = useSelector((state) => state.auth);
+  console.log(user);
   const dispatch = useDispatch();
   useEffect(() => {
-    console.log(server);
-
     axios
       .get(`${server}/api/v1/user/me`, { withCredentials: true })
-      .then((res) => {
-        console.log(res);
-      })
+      .then(({ data }) => dispatch(userExists(data.user)))
       .catch((err) => {
         dispatch(userNotExists());
       });

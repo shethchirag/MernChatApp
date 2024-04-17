@@ -5,7 +5,7 @@ const errorMiddleware = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
 
   if (err.code === 11000) {
-    const error = object.keys(err.keyPattern).join(",");
+    const error = Object.keys(err.keyPattern).join(",");
     err.message = `"Duplicate key error": ${error}`;
     err.statusCode = 400;
   }
