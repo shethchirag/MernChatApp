@@ -15,7 +15,6 @@ const AppLayout = (WrappedComponent) => {
   return function EnhancedComponent(props) {
     const { chatId } = useParams();
     const { isMobileMenu } = useSelector((state) => state.misc);
-    console.log(isMobileMenu);
     const dispatch = useDispatch();
     const { isLoading, data, isError, error, refetch } = useMyChatsQuery("");
 

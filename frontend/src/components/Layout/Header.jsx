@@ -22,13 +22,12 @@ const NotificationsDialog = lazy(() => import("../specific/Notifications"));
 const NewGroupDialog = lazy(() => import("../specific/Newgroup"));
 import { useDispatch, useSelector } from "react-redux";
 import { userNotExists } from "../../redux/reducers/auth";
-import { setIsMobileMenu } from "../../redux/reducers/misc";
+import { setIsMobileMenu, setIsSearch } from "../../redux/reducers/misc";
 
 const Header = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [isSearch, setIsSearch] = useState(false);
   const [isNewGroup, setIsNewGroup] = useState(false);
   const [isNotification, setIsNotification] = useState(false);
+  const { isSearch } = useSelector((state) => state.misc);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const handleMobile = () => {
@@ -36,7 +35,7 @@ const Header = () => {
     console.log("mobileclick");
   };
   const openSearch = () => {
-    setIsSearch(!isSearch);
+    dispatch(setIsSearch(true));
   };
 
   const openNewGroupDialog = () => {
