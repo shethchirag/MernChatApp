@@ -4,9 +4,9 @@ import { IconButton, Stack } from "@mui/material";
 import { GrayColor, Orange } from "../components/Layout/constants/Color";
 import { AttachFile, Send as SendIcon } from "@mui/icons-material";
 import { InputBox } from "../components/style/VisuallyHidden";
-import FileMenu from "../components/dailogs/FileMenu";
 import { sampleMessages } from "../components/Layout/constants/SampleData";
 import MessageComponent from "../components/shared/MessageComponent";
+import FileMenu from "./../components/dialogs/FileMenu";
 
 const user = {
   _id: "xshgchsvcjhcbskc",

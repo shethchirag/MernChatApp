@@ -22,17 +22,19 @@ const NotificationsDialog = lazy(() => import("../specific/Notifications"));
 const NewGroupDialog = lazy(() => import("../specific/Newgroup"));
 import { useDispatch, useSelector } from "react-redux";
 import { userNotExists } from "../../redux/reducers/auth";
-import { setIsMobileMenu, setIsSearch } from "../../redux/reducers/misc";
+import {
+  setIsMobileMenu,
+  setIsSearch,
+  setIsNotification,
+} from "../../redux/reducers/misc";
 
 const Header = () => {
   const [isNewGroup, setIsNewGroup] = useState(false);
-  const [isNotification, setIsNotification] = useState(false);
-  const { isSearch } = useSelector((state) => state.misc);
+  const { isSearch, isNotification } = useSelector((state) => state.misc);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const handleMobile = () => {
     dispatch(setIsMobileMenu(true));
-    console.log("mobileclick");
   };
   const openSearch = () => {
     dispatch(setIsSearch(true));
@@ -42,7 +44,7 @@ const Header = () => {
     setIsNewGroup(!isNewGroup);
   };
   const openNewNotificationDialog = () => {
-    setIsNotification(!isNotification);
+    dispatch(setIsNotification(true));
   };
   const navigateToGroup = () => {
     navigate("/groups");
@@ -100,12 +102,12 @@ const Header = () => {
           </Box>
           {isSearch && (
             <Suspense fallback={<Backdrop open={true} />}>
-              <SearchDialog close={openSearch} />
+              <SearchDialog />
             </Suspense>
           )}
           {isNotification && (
             <Suspense fallback={<Backdrop open={true} />}>
-              <NotificationsDialog close={openSearch} />
+              <NotificationsDialog />
             </Suspense>
           )}
           {isNewGroup && (

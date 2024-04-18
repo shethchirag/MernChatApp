@@ -37,7 +37,6 @@ const SearchDialog = () => {
     const timeOutId = setTimeout(() => {
       searchUser(search.value)
         .then(({ data }) => {
-          console.log(data);
           setUsers(data.users);
         })
         .catch((e) => console.log(e));
