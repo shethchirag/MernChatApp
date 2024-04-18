@@ -1,30 +1,37 @@
+import { useInputValidation } from "6pp";
+import { Search as SearchIcon } from "@mui/icons-material";
 import {
   Dialog,
   DialogTitle,
   InputAdornment,
   List,
-  ListItem,
-  ListItemText,
   Stack,
   TextField,
 } from "@mui/material";
-import { useInputValidation } from "6pp";
-import { Search as SearchIcon } from "@mui/icons-material";
-import UserItemMemo from "../shared/UserItem";
 import { useEffect, useState } from "react";
-import { sampleUsers } from "../Layout/constants/SampleData";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  useLazySearchUsersQuery,
+  useSendFriendRequestMutation,
+} from "../../redux/api/api";
 import { setIsSearch } from "../../redux/reducers/misc";
-import { useLazySearchUsersQuery } from "../../redux/api/api";
+import UserItemMemo from "../shared/UserItem";
+import { toast } from "react-hot-toast";
+import { useAsyncMutation } from "../hooks/hook";
 
 const SearchDialog = () => {
   const search = useInputValidation("");
   const { isSearch } = useSelector((state) => state.misc);
   const [searchUser] = useLazySearchUsersQuery();
+  const [sendFriendRequest, isLoadingSendFriendRequest] = useAsyncMutation(
+    useSendFriendRequestMutation
+  );
   const dispatch = useDispatch();
-  let isLoadingSendFriendRequest = false;
+  // let isLoadingSendFriendRequest = false;
   const [users, setUsers] = useState([]);
-  const addfriendHandler = (id) => {};
+  const addfriendHandler = async (id) => {
+    await sendFriendRequest("sending Friend Request...", { userId: id });
+  };
 
   useEffect(() => {
     const timeOutId = setTimeout(() => {

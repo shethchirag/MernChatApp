@@ -22,7 +22,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 function App() {
   const { user, isLoading } = useSelector((state) => state.auth);
-  console.log(user);
+
   const dispatch = useDispatch();
   useEffect(() => {
     axios
