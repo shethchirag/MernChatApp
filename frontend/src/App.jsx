@@ -19,6 +19,7 @@ const UserManagement = lazy(() => import("./pages/Admin/UserManagement"));
 const MessageManagement = lazy(() => import("./pages/Admin/MessageManagement"));
 const ChatManagement = lazy(() => import("./pages/Admin/ChatManagement"));
 import toast, { Toaster } from "react-hot-toast";
+import { SocketProvider } from "./socket";
 
 function App() {
   const { user, isLoading } = useSelector((state) => state.auth);
@@ -40,7 +41,13 @@ function App() {
       <BrowserRouter>
         <Suspense fallback={<LayoutLoader />}>
           <Routes>
-            <Route element={<ProtectRoute user={user} redirectTo="/login" />}>
+            <Route
+              element={
+                <SocketProvider>
+                  <ProtectRoute user={user} redirectTo="/login" />
+                </SocketProvider>
+              }
+            >
               <Route path="/" element={<Home />} />
               <Route path="/chat/:chatId" element={<Chat />} />
               <Route path="/groups" element={<Groups />} />

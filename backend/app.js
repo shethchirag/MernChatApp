@@ -4,9 +4,6 @@ import { connectDB } from "./Utils/features.js";
 import dotenv from "dotenv";
 import { errorMiddleware } from "./middleware/error.js";
 import cookieParser from "cookie-parser";
-import useRouter from "./routes/user.js";
-import chatRouter from "./routes/chat.js";
-import adminRouter from "./routes/admin.js";
 import { createMessageInAChat } from "./seeders/chat.js";
 import { Server, Socket } from "socket.io";
 import { createServer } from "http";
@@ -17,7 +14,11 @@ import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
 import cors from "cors";
 import { v2 as cloudinary } from "cloudinary";
-import { createUser } from "./seeders/user.js";
+import { corsOptions } from "./constant/config.js";
+import { socketAuthenticator } from "./middleware/auth.js";
+import useRouter from "./routes/user.js";
+import chatRouter from "./routes/chat.js";
+import adminRouter from "./routes/admin.js";
 
 dotenv.config({
   path: "./.env",
@@ -43,22 +44,13 @@ cloudinary.config({
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {});
+const io = new Server(server, { cors: corsOptions });
 
 //using middleware here
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded());
-app.use(
-  cors({
-    origin: [
-      "http://localhost:4173",
-      "http://localhost:5173",
-      process.env.CLIENT_URL,
-    ],
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 
 app.use("/api/v1/user", useRouter);
 app.use("/api/v1/chat", chatRouter);
@@ -68,13 +60,17 @@ app.get("/", (req, res) => {
   res.send("Home Page");
 });
 
-io.use((socket, next) => {});
+io.use((socket, next) => {
+  cookieParser()(
+    socket.request,
+    socket.request.res,
+    async (err) => await socketAuthenticator(err, socket, next)
+  );
+});
 
 io.on("connection", (socket) => {
-  const user = {
-    _id: "sheth",
-    name: "chirag",
-  };
+  const user = socket.user;
+
   userSocketIDs.set(user._id.toString(), socket.id);
   console.log(userSocketIDs);
   socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {

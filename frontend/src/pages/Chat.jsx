@@ -1,22 +1,50 @@
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppLayout from "../components/Layout/AppLayout";
-import { IconButton, Stack } from "@mui/material";
+import { IconButton, Skeleton, Stack } from "@mui/material";
 import { GrayColor, Orange } from "../components/Layout/constants/Color";
 import { AttachFile, Send as SendIcon } from "@mui/icons-material";
 import { InputBox } from "../components/style/VisuallyHidden";
 import { sampleMessages } from "../components/Layout/constants/SampleData";
 import MessageComponent from "../components/shared/MessageComponent";
 import FileMenu from "./../components/dialogs/FileMenu";
+import { useGetSocket } from "../socket";
+import { NEW_MESSAGE } from "../components/Layout/constants/event";
+import { useChatDetailsQuery } from "../redux/api/api";
+import { useSocketEvents } from "../components/hooks/hook";
+import { useSelector } from "react-redux";
 
-const user = {
-  _id: "xshgchsvcjhcbskc",
-  name: "chirag",
-};
-
-const Chat = () => {
+const Chat = ({ chatId }) => {
   const containerRef = useRef(null);
+  const socket = useGetSocket();
+  const { user } = useSelector((state) => state.auth);
 
-  return (
+  const { data: chatDetails } = useChatDetailsQuery({ chatId, skip: !chatId });
+  const members = chatDetails?.chat?.members;
+
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  console.log(messages);
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+    socket.emit(NEW_MESSAGE, {
+      chatId,
+      members,
+      message,
+    });
+    setMessage("");
+  };
+  const newMessagesHandler = useCallback((data) => {
+    setMessages((prev) => [...prev, data.message]);
+  }, []);
+
+  const eventHandler = { [NEW_MESSAGE]: newMessagesHandler };
+  useSocketEvents(socket, eventHandler);
+
+  return chatDetails?.isLoading ? (
+    <Skeleton />
+  ) : (
     <>
       <Stack
         ref={containerRef}
@@ -30,11 +58,11 @@ const Chat = () => {
           overflowX: "hidden",
         }}
       >
-        {sampleMessages.map((message) => (
+        {messages?.map((message) => (
           <MessageComponent key={message._id} user={user} message={message} />
         ))}
       </Stack>
-      <form style={{ height: "10%" }}>
+      <form style={{ height: "10%" }} onSubmit={submitHandler}>
         <Stack
           direction={"row"}
           height={"100%"}
@@ -51,7 +79,11 @@ const Chat = () => {
           >
             <AttachFile />
           </IconButton>
-          <InputBox placeholder="Type Message Here..." />
+          <InputBox
+            placeholder="Type Message Here..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
           <IconButton
             type="submit"
             sx={{

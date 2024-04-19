@@ -10,6 +10,7 @@ import { useMyChatsQuery } from "../../redux/api/api";
 import { useDispatch, useSelector } from "react-redux";
 import { setIsMobileMenu } from "../../redux/reducers/misc";
 import { useErrors } from "../hooks/hook";
+import { useGetSocket } from "../../socket";
 
 const AppLayout = (WrappedComponent) => {
   return function EnhancedComponent(props) {
@@ -17,6 +18,7 @@ const AppLayout = (WrappedComponent) => {
     const { isMobileMenu } = useSelector((state) => state.misc);
     const dispatch = useDispatch();
     const { isLoading, data, isError, error, refetch } = useMyChatsQuery("");
+    const socket = useGetSocket();
 
     useErrors([{ isError, error }]);
 
@@ -78,7 +80,7 @@ const AppLayout = (WrappedComponent) => {
             )}
           </Grid>
           <Grid item xs={12} sm={8} md={5} lg={6} height={"100%"}>
-            <WrappedComponent {...props} />
+            <WrappedComponent {...props} chatId={chatId} />
           </Grid>
           <Grid
             item
