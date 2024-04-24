@@ -2,15 +2,17 @@ import { Drawer, Grid, Skeleton } from "@mui/material";
 import Title from "../shared/Title";
 import Header from "./Header";
 
-import { sampleChats } from "./constants/SampleData";
 import ChatList from "../specific/ChatList";
 import { useParams } from "react-router-dom";
 import Profile from "../specific/Profile";
 import { useMyChatsQuery } from "../../redux/api/api";
 import { useDispatch, useSelector } from "react-redux";
 import { setIsMobileMenu } from "../../redux/reducers/misc";
-import { useErrors } from "../hooks/hook";
+import { useErrors, useSocketEvents } from "../hooks/hook";
 import { useGetSocket } from "../../socket";
+import { NEW_MESSAGE_ALERT, NEW_REQUEST } from "./constants/event";
+import { useCallback } from "react";
+import { incrementNotification } from "../../redux/reducers/chat";
 
 const AppLayout = (WrappedComponent) => {
   return function EnhancedComponent(props) {
@@ -28,6 +30,17 @@ const AppLayout = (WrappedComponent) => {
     const handleMobileClose = () => {
       dispatch(setIsMobileMenu(false));
     };
+
+    const newMessagesAlertHandler = useCallback(() => {}, []);
+    const newRequestsHandler = useCallback(() => {
+      dispatch(incrementNotification());
+    }, [dispatch]);
+
+    const eventHandlers = {
+      [NEW_MESSAGE_ALERT]: newMessagesAlertHandler,
+      [NEW_REQUEST]: newRequestsHandler,
+    };
+    useSocketEvents(socket, eventHandlers);
 
     return (
       <div>

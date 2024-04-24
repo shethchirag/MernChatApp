@@ -10,22 +10,24 @@ import { useGetSocket } from "../socket";
 import { NEW_MESSAGE } from "../components/Layout/constants/event";
 import { useChatDetailsQuery, useGetMessagesQuery } from "../redux/api/api";
 import { useErrors, useSocketEvents } from "../components/hooks/hook";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useInfiniteScrollTop } from "6pp";
+import { setIsFileMenu } from "../redux/reducers/misc";
 
 const Chat = ({ chatId }) => {
   const containerRef = useRef(null);
   const socket = useGetSocket();
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
 
-  const { data: chatDetails } = useChatDetailsQuery({ chatId, skip: !chatId });
-  const members = chatDetails?.chat?.members;
+  const chatDetails = useChatDetailsQuery({ chatId, skip: !chatId });
+  const members = chatDetails?.data?.chat?.members;
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [page, setPage] = useState(1);
+  const [fileMenuAnchor, setFileMenuAnchor] = useState(null);
 
   const oldMessagesChunk = useGetMessagesQuery({ chatId, page: page });
-
   const { data: oldMessage, setData: setOldMessage } = useInfiniteScrollTop(
     containerRef,
     oldMessagesChunk.data?.totalPages,
@@ -33,8 +35,6 @@ const Chat = ({ chatId }) => {
     setPage,
     oldMessagesChunk.data?.messages
   );
-  console.log("🚀 ~ Chat ~ oldMessage:", oldMessage);
-
   const errors = [
     { isError: chatDetails?.isError, error: chatDetails?.error },
     { isError: oldMessagesChunk?.isError, error: oldMessagesChunk?.error },
@@ -57,8 +57,12 @@ const Chat = ({ chatId }) => {
   useSocketEvents(socket, eventHandler);
 
   useErrors(errors);
-
   const allMessages = [...oldMessage, ...messages];
+
+  const handleFileOpen = (e) => {
+    dispatch(setIsFileMenu(true));
+    setFileMenuAnchor(e.currentTarget);
+  };
 
   return chatDetails?.isLoading ? (
     <Skeleton />
@@ -94,6 +98,7 @@ const Chat = ({ chatId }) => {
               left: "1.5rem",
               rotate: "30deg",
             }}
+            onClick={handleFileOpen}
           >
             <AttachFile />
           </IconButton>
@@ -119,7 +124,7 @@ const Chat = ({ chatId }) => {
           </IconButton>
         </Stack>
       </form>
-      <FileMenu />
+      <FileMenu anchorEl={fileMenuAnchor} chatId={chatId} />
     </>
   );
 };

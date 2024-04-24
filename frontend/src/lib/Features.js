@@ -20,7 +20,10 @@ const fileFormat = (url = "") => {
   return "file";
 };
 
-const transformImage = (url = "", width = 100) => url;
+const transformImage = (url = "", width = 100) => {
+  const newUrl = url.replace("upload/", `upload/w_${width},dpr_auto/`);
+  return newUrl;
+};
 
 const getLast7Days = () => {
   const CurrentDate = moment();

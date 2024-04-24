@@ -46,6 +46,7 @@ const api = createApi({
       }),
       invalidatesTags: ["Chats"],
     }),
+
     chatDetails: builder.query({
       query: ({ chatId, populate = false }) => {
         let url = `chat/${chatId}`;
@@ -56,14 +57,23 @@ const api = createApi({
           credentials: "include",
         };
       },
-      providesTags: ["Chats"],
+      providesTags: ["Chat"],
     }),
+
     getMessages: builder.query({
       query: ({ chatId, page }) => ({
         url: `chat/message/${chatId}?page=${page}`,
         credentials: "include",
       }),
       providesTags: ["Message"],
+    }),
+    sendAttachments: builder.mutation({
+      query: (data) => ({
+        url: "chat/message",
+        method: "POST",
+        credentials: "include",
+        body: data,
+      }),
     }),
   }),
 });
@@ -77,4 +87,5 @@ export const {
   useAcceptFriendRequestMutation,
   useChatDetailsQuery,
   useGetMessagesQuery,
+  useSendAttachmentsMutation,
 } = api;

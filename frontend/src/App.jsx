@@ -22,7 +22,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { SocketProvider } from "./socket";
 
 function App() {
-  const { user, isLoading } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -34,7 +34,7 @@ function App() {
       });
   }, [dispatch]);
 
-  return isLoading ? (
+  return loading ? (
     <LayoutLoader />
   ) : (
     <>
@@ -44,7 +44,7 @@ function App() {
             <Route
               element={
                 <SocketProvider>
-                  <ProtectRoute user={user} redirectTo="/login" />
+                  <ProtectRoute user={user} />
                 </SocketProvider>
               }
             >
